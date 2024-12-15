@@ -1,18 +1,17 @@
 package org.sample.BTCK;
 
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.util.Units;
-import org.apache.poi.xwpf.usermodel.*;
+import com.spire.doc.Document;
+import com.spire.doc.FileFormat; // Sử dụng FileFormat từ Spire.Doc
+import com.spire.doc.Section;
 import com.spire.pdf.PdfDocument;
-import com.spire.pdf.FileFormat;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 
-import java.io.*;
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
 
 public class App {
-    public static void main(String[] args) throws IOException, InvalidFormatException {
+    public static void main(String[] args) throws IOException {
         // Đường dẫn đến file PDF gốc
         File pdffile = new File("D:\\2024\\Java\\slide\\Bai_Giang_Lap_Trinh_Java-Hamv1.pdf");
         PDDocument document = PDDocument.load(pdffile);
@@ -62,116 +61,31 @@ public class App {
         pdf.loadFromFile(pdfFilePath); // Tải PDF vào PdfDocument
 
         // Chuyển đổi PDF sang DOCX
-        pdf.saveToFile(docxOutputPath, FileFormat.DOCX);
+        pdf.saveToFile(docxOutputPath, com.spire.pdf.FileFormat.DOCX);
 
         System.out.println("Chuyển đổi PDF sang DOCX thành công: " + docxOutputPath);
     }
 
-    // Hàm nối các file DOCX vào một file duy nhất mà không mất định dạng
-    public static void mergeDocxFiles(String[] docxFiles, String outputDocx) throws IOException, InvalidFormatException {
-        XWPFDocument mergedDoc = new XWPFDocument();
+    // Hàm nối các file DOCX vào một file duy nhất sử dụng Spire.Doc
+    public static void mergeDocxFiles(String[] docxFiles, String outputDocx) throws IOException {
+        // Tạo một tài liệu Word mới
+        Document mergedDoc = new Document();
 
+        // Duyệt qua từng file DOCX trong danh sách
         for (String docxFile : docxFiles) {
-            XWPFDocument doc = new XWPFDocument(new FileInputStream(docxFile));
+            // Mở tài liệu DOCX từ file
+            Document doc = new Document();
+            doc.loadFromFile(docxFile);
 
-            // Sao chép tất cả các đoạn văn từ file DOCX vào tài liệu mergedDoc
-            copyParagraphs(doc, mergedDoc);
-
-            // Sao chép các bảng từ file DOCX vào tài liệu mergedDoc
-            copyTables(doc, mergedDoc);
-
-            // Sao chép hình ảnh (Pictures) từ tài liệu nguồn vào tài liệu kết quả
-            copyPictures(doc, mergedDoc);
-        }
-
-        // Lưu tài liệu đã nối vào file output
-        try (FileOutputStream out = new FileOutputStream(outputDocx)) {
-            mergedDoc.write(out);
-        }
+            // Duyệt qua tất cả các phần trong tài liệu
+            for (int j = 0; j < doc.getSections().getCount(); j++) {
+                Section section = doc.getSections().get(j);
+                // Thêm phần vào tài liệu chính
+                mergedDoc.importSection(section);
+            }
+        }// Lưu tài liệu đã nối vào file output
+        mergedDoc.saveToFile(outputDocx, FileFormat.Docx);
 
         System.out.println("Nối các file DOCX thành công vào: " + outputDocx);
     }
-
-    // Sao chép các đoạn văn bản từ tài liệu nguồn sang tài liệu đích
-    public static void copyParagraphs(XWPFDocument srcDoc, XWPFDocument destDoc) {
-        for (XWPFParagraph paragraph : srcDoc.getParagraphs()) {
-            XWPFParagraph newParagraph = destDoc.createParagraph();
-            for (XWPFRun run : paragraph.getRuns()) {
-                XWPFRun newRun = newParagraph.createRun();
-                newRun.setText(run.toString()); // Sao chép nội dung văn bản
-
-                // Sao chép định dạng của đoạn văn
-                newRun.setBold(run.isBold());
-                newRun.setItalic(run.isItalic());
-                newRun.setStrike(run.isStrikeThrough());
-                newRun.setUnderline(run.getUnderline());
-                newRun.setFontSize(run.getFontSize());
-                newRun.setFontFamily(run.getFontFamily());
-                newRun.setColor(run.getColor());
-            }
-
-            // Sao chép các thuộc tính của đoạn văn (căn lề, v.v.)
-            newParagraph.setAlignment(paragraph.getAlignment());
-            newParagraph.setVerticalAlignment(paragraph.getVerticalAlignment());
-        }
-    }
-
-    // Sao chép các bảng từ tài liệu nguồn sang tài liệu đích
-    public static void copyTables(XWPFDocument srcDoc, XWPFDocument destDoc) {
-        for (XWPFTable table : srcDoc.getTables()) {
-            XWPFTable newTable = destDoc.createTable();
-
-            // Sao chép từng dòng trong bảng
-            for (XWPFTableRow row : table.getRows()) {
-                XWPFTableRow newRow = newTable.createRow();
-                for (XWPFTableCell cell : row.getTableCells()) {
-                    XWPFTableCell newCell = newRow.createCell();
-                    newCell.setText(cell.getText());
-
-                    // Sao chép thêm các định dạng của bảng (nếu cần)
-                }
-            }
-        }
-    }
-
-    public static void copyPictures(XWPFDocument srcDoc, XWPFDocument destDoc) throws IOException, InvalidFormatException {
-        for (XWPFPictureData picture : srcDoc.getAllPictures()) {
-            byte[] pictureData = picture.getData();
-            int pictureType = getPictureType(picture.suggestFileExtension());
-
-            // Thêm hình ảnh vào tài liệu đích (DOCX)
-            destDoc.addPictureData(pictureData, pictureType);
-
-            // Tạo một đoạn văn mới và chèn hình ảnh vào đó
-            XWPFParagraph paragraph = destDoc.createParagraph();
-            XWPFRun run = paragraph.createRun();
-
-            try (ByteArrayInputStream bais = new ByteArrayInputStream(pictureData)) {
-                // Chèn hình ảnh vào đoạn văn (cung cấp chiều rộng và chiều cao)
-                run.addPicture(bais, pictureType, picture.getFileName(), Units.toEMU(200), Units.toEMU(200)); // Kích thước có thể thay đổi
-            } catch (Exception e) {
-                System.err.println("Lỗi khi chèn hình ảnh: " + e.getMessage());
-            }
-        }
-    }
-
-    // Phương thức hỗ trợ để chuyển phần mở rộng tệp sang kiểu hình ảnh
-    private static int getPictureType(String fileExtension) {
-        switch (fileExtension.toLowerCase()) {
-            case "jpeg":
-            case "jpg":
-                return XWPFDocument.PICTURE_TYPE_JPEG;
-            case "png":
-                return XWPFDocument.PICTURE_TYPE_PNG;
-            case "gif":
-                return XWPFDocument.PICTURE_TYPE_GIF;
-            case "bmp":
-                return XWPFDocument.PICTURE_TYPE_BMP;
-            default:
-                throw new IllegalArgumentException("Không hỗ trợ định dạng hình ảnh: " + fileExtension);
-        }
-    }
-
-
-
 }
