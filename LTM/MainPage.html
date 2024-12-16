@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./MainPage.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
+</head>
+<body>
+    <div class="taskbar">
+        <div class="taskbar__item">
+            <ol>
+                <li onclick="Function_Convert()"><i class="fa-solid fa-file-code"></i>  Convert</li>
+                <li onclick="Function_History()"><i class="fa-solid fa-layer-group"></i>  History</li>
+            </ol>
+            <div class="account">
+                <i class="fa-solid fa-user-tie"></i>
+                ADBcsa
+            </div>
+        </div>
+    </div>
+    <div class="Converter" id="Converter">
+        <h1>PDF to Docx Converter</h1>
+        <div class="Converter_item">
+            <div class="Content">
+                <i class="fa-solid fa-file-pdf"></i>
+                <button>
+                    Choose file >>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="History" id="History">
+        <h1>History</h1>
+        <table>
+            <tr>
+                <th>STT</th>
+                <th>Tên file</th>
+                <th>Thời gian</th>
+                <th>Trạng thái</th>
+                <th>Tải về</th>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>ABC.pdf</td>
+                <td>12-12-2024</td>
+                <td style="color: green;">Thành công</td>
+                <td><i class="fa-solid fa-download"></i></td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>ABC.pdf</td>
+                <td>12-12-2024</td>
+                <td style="color: red;">Đang chuyển...</td>
+                <td><i class="fa-solid fa-download"></i></td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>ABC.pdf</td>
+                <td>12-12-2024</td>
+                <td style="color: green;">Thành công</td>
+                <td><i class="fa-solid fa-download"></i></td>
+            </tr>
+        </table>
+    </div>
+    <script>
+        function Function_Convert(){
+            document.getElementById("Converter").style.display = "flex";
+            document.getElementById("History").style.display = "none";
+        }
+        function Function_History(){
+            document.getElementById("Converter").style.display = "none";
+            document.getElementById("History").style.display = "flex";
+        }
+    </script>
+</body>
+</html>
